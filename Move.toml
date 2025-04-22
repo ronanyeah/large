@@ -1,0 +1,13 @@
+[package]
+name = "large"
+edition = "2024"
+
+[dependencies]
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "testnet" }
+
+[addresses]
+large = "0x5cccbfec0ef491993f5b2aa19b98845476ad720254c2e758254e23dbe547b94d"
+
+[dev-dependencies]
+
+[dev-addresses]
