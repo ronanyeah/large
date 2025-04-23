@@ -116,6 +116,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             println!("TX status: {:?}", res.status());
             println!("TX digest: {}", tx.digest());
+            let new_campaign_id = sui::find_created_shared_obj(&res)?;
+            println!("New campaign object ID: {new_campaign_id}");
         }
         Commands::CurrentWallet => {
             ffi::sui_check().await?;

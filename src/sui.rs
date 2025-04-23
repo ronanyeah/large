@@ -94,11 +94,17 @@ pub async fn get_shared_obj(
     Ok(val)
 }
 
-pub fn find_created_obj(tx: &sui_sdk_types::TransactionEffects) -> anyhow::Result<ObjectId> {
+pub fn find_created_shared_obj(tx: &sui_sdk_types::TransactionEffects) -> anyhow::Result<ObjectId> {
     if let sui_sdk_types::TransactionEffects::V2(data) = tx {
         let obj = data.changed_objects.iter().find(|x| {
-            x.output_state != sui_sdk_types::ObjectOut::NotExist
-                && x.id_operation == sui_sdk_types::IdOperation::Created
+            let is_shared = matches!(
+                x.output_state,
+                sui_sdk_types::ObjectOut::ObjectWrite {
+                    owner: sui_sdk_types::Owner::Shared(_),
+                    ..
+                }
+            );
+            is_shared && x.id_operation == sui_sdk_types::IdOperation::Created
         });
         if let Some(val) = obj {
             return Ok(val.object_id);

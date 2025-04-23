@@ -161,8 +161,6 @@ pub async fn get_delete_cap(
     sender: &Address,
     drop_id: &ObjectId,
 ) -> anyhow::Result<ObjectId> {
-    // todo: handle DeleteCap vs Drop object discrimination
-
     let delete_cap_type = format!("{}::drop::DeleteCap", package_id());
     let delete_caps = client
         .objects(
