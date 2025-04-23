@@ -14,6 +14,10 @@ This repository privides a Rust CLI which can be use to create campaigns, genera
 
 It requires both the [Sui CLI](https://docs.sui.io/guides/developer/getting-started/sui-install) and [Walrus CLI](https://docs.wal.app/usage/setup.html) to be installed.
 
+#### > Install
+
+`cargo install --locked --git https://github.com/ronanyeah/large.git`
+
 
 ```
 Usage: large <COMMAND>
