@@ -1,6 +1,6 @@
 module large::drop;
 
-use std::hash;
+use sui::hash;
 use sui::{coin, table::Table};
 
 public struct Drop<phantom TOKEN> has key, store {
@@ -29,6 +29,10 @@ public fun create_drop<TOKEN>(
     wallet_count: u32,
     ctx: &mut TxContext,
 ): DeleteCap {
+    assert!(wallet_count >= 2);
+    assert!(root.length() == 32);
+    assert!(funds.value() > 0);
+
     let id = object::new(ctx);
     let admin_cap = DeleteCap {
         id: object::new(ctx),
@@ -78,6 +82,9 @@ public fun claim<TOKEN>(
     drop: &mut Drop<TOKEN>,
     ctx: &mut TxContext,
 ): coin::Coin<TOKEN> {
+    assert!(leaf_index < drop.wallet_count as u64);
+    assert!(proof.length() == proof_length(drop.wallet_count as u64));
+
     let res = verify_sender_proof(drop.root, &proof, &ctx.sender(), allocation, leaf_index);
 
     assert!(res);
@@ -112,6 +119,13 @@ fun verify_proof(
     leaf: vector<u8>,
     leaf_index: u64,
 ): bool {
+    assert!(root.length() == 32);
+    assert!(leaf.length() == 32);
+    assert!(proof.all!(|h| h.length() == 32));
+
+    let node_set = sui::vec_set::from_keys(*proof);
+    assert!(node_set.size() == proof.length());
+
     let computed_hash = compute_proof(leaf, proof, leaf_index);
     computed_hash == root
 }
@@ -122,7 +136,7 @@ fun compute_proof(
     mut current_index: u64,
 ): vector<u8> {
     let mut current_hash = leaf;
-    let proof_length = vector::length(proof);
+    let proof_length = proof.length();
     let mut i = 0;
 
     while (i < proof_length) {
@@ -145,12 +159,24 @@ fun compute_proof(
 
 fun hash_slices(mut a: vector<u8>, b: vector<u8>): vector<u8> {
     vector::append(&mut a, b);
-    hash::sha2_256(a)
+    hash::blake2b256(&a)
 }
 
-fun hash_address_w_allocation(addr: &address, allo: u64): vector<u8> {
+fun hash_address_w_allocation(addr: &address, allocation: u64): vector<u8> {
     let mut bts = vector::empty();
     vector::append(&mut bts, sui::bcs::to_bytes(addr));
-    vector::append(&mut bts, sui::bcs::to_bytes(&allo));
-    hash::sha2_256(bts)
+    vector::append(&mut bts, sui::bcs::to_bytes(&allocation));
+    hash::blake2b256(&bts)
+}
+
+fun proof_length(leaves: u64): u64 {
+    let mut x = leaves - 1; // Adjust for ceiling: non-power-of-2 rounds up.
+    let mut log = 0;
+
+    while (x > 0) {
+        x = x >> 1; // Divide by 2 via right shift.
+        log = log + 1;
+    };
+
+    log
 }

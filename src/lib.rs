@@ -5,6 +5,7 @@ pub mod txns;
 pub mod wallets;
 
 use base64::Engine;
+use futures::StreamExt;
 use std::str::FromStr;
 use sui_sdk_types::Address;
 
@@ -33,7 +34,11 @@ pub async fn fetch_merkle_tree(
     object: &Address,
 ) -> anyhow::Result<merkle::MerkleTree> {
     let blob_id = sui::get_blob_from_obj(client, object).await?;
-    let data = ffi::read_blob(&blob_id).await?;
+    fetch_merkle_tree_blob(&blob_id).await
+}
+
+pub async fn fetch_merkle_tree_blob(blob_id: &str) -> anyhow::Result<merkle::MerkleTree> {
+    let data = ffi::read_blob(blob_id).await?;
     let bts = base64::engine::general_purpose::STANDARD.decode(data.blob)?;
     let out = bcs::from_bytes(&bts)?;
     Ok(out)
@@ -44,20 +49,41 @@ pub async fn fetch_allocations(
     object: &Address,
 ) -> anyhow::Result<Vec<(Address, u64)>> {
     let blob_id = sui::get_blob_from_obj(client, object).await?;
+    fetch_allocations_blob(&blob_id).await
+}
+
+pub async fn fetch_allocations_blob(blob_id: &str) -> anyhow::Result<Vec<(Address, u64)>> {
     let data = ffi::read_blob(&blob_id).await?;
     let bts = base64::engine::general_purpose::STANDARD.decode(data.blob)?;
     let out = wallets::parse_csv_bytes(&bts)?;
     Ok(out)
 }
 
+pub async fn read_stream(response: reqwest::Response) -> anyhow::Result<Vec<u8>> {
+    let mut stream = response.bytes_stream();
+    let mut buffer = bytes::BytesMut::new();
+
+    while let Some(chunk) = stream.next().await {
+        let bytes = chunk?;
+        buffer.extend_from_slice(&bytes);
+    }
+    let result = buffer.to_vec();
+    Ok(result)
+}
+
 //type Allocations = Vec<(Address, u64)>;
 
 pub trait AllocationExt {
     fn get_allocation(&self, wallet: &Address) -> Option<u64>;
+    fn get_leaf(&self, wallet: &Address) -> Option<merkle::Hash>;
 }
 
 impl AllocationExt for Vec<(Address, u64)> {
     fn get_allocation(&self, wallet: &Address) -> Option<u64> {
         self.iter().find(|(addr, _)| addr == wallet).map(|v| v.1)
+    }
+    fn get_leaf(&self, wallet: &Address) -> Option<merkle::Hash> {
+        let allo = self.get_allocation(wallet)?;
+        Some(wallets::hash_allo(wallet, allo))
     }
 }

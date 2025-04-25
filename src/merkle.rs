@@ -1,5 +1,5 @@
+use blake2::{Blake2b, Digest};
 use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
 
 pub type Hash = [u8; 32];
 
@@ -80,7 +80,7 @@ impl MerkleTree {
 }
 
 fn hash_pair(left: &Hash, right: &Hash) -> Hash {
-    let mut hasher = Sha256::new();
+    let mut hasher = Blake2b::new();
     hasher.update(left);
     hasher.update(right);
     hasher.finalize().into()
@@ -112,11 +112,11 @@ pub fn verify_proof(root: &Hash, leaf: &Hash, proof: &Proof, leaf_idx: u64) -> b
 #[cfg(test)]
 mod tests {
     use super::*;
+    use blake2::{Blake2b, Digest};
     use proptest::prelude::*;
-    use sha2::{Digest, Sha256};
 
     fn create_hash(data: &[u8]) -> Hash {
-        let mut hasher = Sha256::new();
+        let mut hasher = Blake2b::new();
         hasher.update(data);
         hasher.finalize().into()
     }

@@ -1,7 +1,7 @@
 use crate::merkle::Hash;
 use anyhow::{anyhow, Context};
+use blake2::Digest;
 use csv::ReaderBuilder;
-use sha2::{Digest, Sha256};
 use std::collections::HashSet;
 use std::fs::File;
 use sui_sdk_types::Address;
@@ -82,7 +82,7 @@ pub fn clean_addresses(
 }
 
 pub fn hash_allo(address: &Address, allo: u64) -> Hash {
-    let mut hasher = Sha256::new();
+    let mut hasher = blake2::Blake2b::new();
     hasher.update(bcs::to_bytes(address).expect("u64 address fail"));
     hasher.update(bcs::to_bytes(&allo).expect("u64 bcs fail"));
     hasher.finalize().into()

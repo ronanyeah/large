@@ -1,4 +1,4 @@
-use anyhow::anyhow;
+use anyhow::{anyhow, Context};
 use std::str::FromStr;
 use sui_sdk_types::{Address, ObjectId, TypeTag};
 use sui_transaction_builder::{unresolved::Input, TransactionBuilder};
@@ -39,6 +39,18 @@ pub async fn create_tx(
     builder.set_gas_price(1_000);
 
     Ok(builder)
+}
+
+pub async fn fetch_bcs<T: serde::de::DeserializeOwned>(
+    client: &sui_graphql_client::Client,
+    id: &ObjectId,
+) -> anyhow::Result<T> {
+    let obj = client
+        .move_object_contents_bcs((*id).into(), None)
+        .await?
+        .ok_or(anyhow!("object not found"))?;
+    let data = bcs::from_bytes(&obj).context("bcs decode")?;
+    Ok(data)
 }
 
 pub async fn fetch_type_param(

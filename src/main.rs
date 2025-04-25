@@ -1,4 +1,3 @@
-use anyhow::Context;
 use clap::{Parser, Subcommand};
 use large::merkle::MerkleTree;
 use large::sui;
@@ -132,12 +131,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             let drop_obj = drop_id.unwrap_or(drop_object());
             println!("Claiming from drop: {}", drop_obj);
-            let obj = client
-                .move_object_contents_bcs(drop_obj.into(), None)
-                .await?
-                .ok_or("drop not found")?;
             let tt = sui::fetch_type_param(&client, &drop_obj).await?;
-            let data: txns::Drop = bcs::from_bytes(&obj)?;
+            let data: txns::Drop = sui::fetch_bcs(&client, &drop_obj).await?;
 
             let start_time = std::time::Instant::now();
             let mut sp = Spinner::new(Spinners::Aesthetic, "Reading blobs...".into());
@@ -176,13 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let drop_obj_id = drop_id.unwrap_or(drop_object());
             println!("Checking claim in drop ID: {}", drop_obj_id);
             println!("Wallet selected: {}", sender);
-            let drop_obj: txns::Drop = {
-                let obj = client
-                    .move_object_contents_bcs(drop_obj_id.into(), None)
-                    .await?
-                    .ok_or("drop not found")?;
-                bcs::from_bytes(&obj).context("drop decode")?
-            };
+            let drop_obj: txns::Drop = sui::fetch_bcs(&client, &drop_obj_id).await?;
 
             let tt = sui::fetch_type_param(&client, &drop_obj_id).await?;
 
