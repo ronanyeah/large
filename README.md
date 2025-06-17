@@ -8,9 +8,9 @@ Large Protocol provides the ability to cheaply create decentralized airdrop camp
 
 Wallet and allocation data is stored offchain using Walrus, and claims are verified on the Sui blockchain.
 
-Large is currently live on Sui Testnet.
+Large is currently live on Sui Mainnet.
 
-[Program](https://testnet.suivision.xyz/package/0x5cccbfec0ef491993f5b2aa19b98845476ad720254c2e758254e23dbe547b94d)
+[Program](https://suivision.xyz/package/0x7daa0be72e7c857f40f8aefa74ac835dccfa4e25ec40a92665e54249d93d3892)
 
 ### CLI
 
@@ -37,7 +37,7 @@ Commands:
 
 ### Demo
 
-A test campaign has been created with 1 million Sui wallets.
+A Sui testnet campaign with 1 million Sui wallets included in the airdrop.
 
 #### > Walrus data
 - [Wallets + token allocations](https://walruscan.com/testnet/blob/hAsa4S6oysAexymYeF555YFAzcJq5TyXeQPzeDjjhHs) [CSV file - 80mb]
