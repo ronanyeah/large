@@ -1,7 +1,12 @@
 # [Large Protocol](https://large.fun/) - $BRICK airdrop snapshot
 
-- __Date__: June 15th + 16th 2025
+- __Snapshot Date__: June 15th + 16th 2025
+- __Total Airdrop Allocation__: 850,000 $BRICK
 - __Total Wallets__: 575,555
+
+Each wallet received 1 share for every eligible NFT collection or token they held. Each share is `1.16 $BRICK`.
+
+- __Total Shares__: 731,586
 
 ---
 
